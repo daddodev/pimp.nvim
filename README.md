@@ -1,6 +1,6 @@
 # pimp.nvim
 
-"""lua
+```lua
 use({
     "daddodev/pimp.nvim",
     config = function()
@@ -10,4 +10,4 @@ use({
         }
     end,
 })
-"""
+```
