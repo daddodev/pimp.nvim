@@ -1,5 +1,7 @@
 # pimp.nvim
 
+Neovim plugin for (Neovim pimp module)[https://github.com/pimpmyrice-modules/neovim]
+
 ```lua
 use({
     "daddodev/pimp.nvim",
