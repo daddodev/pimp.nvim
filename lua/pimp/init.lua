@@ -3,6 +3,7 @@ local M = {}
 M.config = {
     run_on_start = true,
     watch = true,
+    after_fn = nil
 }
 
 function M.setup(config)
@@ -11,17 +12,17 @@ function M.setup(config)
     end
 
     if M.config.run_on_start or M.config.watch then
-        vim.api.nvim_create_autocmd("VimEnter", {
+        vim.api.nvim_create_autocmd("UiEnter", {
             callback = function()
                 if M.config.run_on_start then
-                    M.load_colors()
+                    M.apply_colors()
                 end
 
                 if M.config.watch then
                     require("pimp.file_watcher").watch(vim.fn.stdpath('config') .. "/pimp.conf", {
                         on_event = function()
                             vim.schedule(function()
-                                M.load_colors()
+                                M.apply_colors()
                             end)
                         end,
                     })
@@ -52,7 +53,7 @@ local function parse_config(file_path)
                 key = key:match("^%s*(.-)%s*$")
                 value = value:match("^%s*(.-)%s*$")
 
-                local category, color_type = key:match("([^_]+)_(.*)")
+                local category, color_type = key:match("([^|]+)|(.*)")
 
                 if category and color_type then
                     if not config[category] then
@@ -69,19 +70,24 @@ local function parse_config(file_path)
     return config
 end
 
-local function apply_colors(config)
+local function set_highlights(config)
     for group, props in pairs(config) do
         vim.api.nvim_set_hl(0, group, props)
     end
 end
 
-function M.load_colors()
+function M.apply_colors()
     local config_path = vim.fn.stdpath("config") .. "/pimp.conf"
     local config = parse_config(config_path)
-    apply_colors(config)
+    set_highlights(config)
+
+    if M.config.after_fn then
+        M.config.after_fn()
+    end
+
     vim.notify("pimp colors applied!", vim.log.levels.DEBUG)
 end
 
-vim.api.nvim_create_user_command("PimpReload", M.load_colors, {})
+vim.api.nvim_create_user_command("PimpReload", M.apply_colors, {})
 
 return M
