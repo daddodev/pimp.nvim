@@ -3,6 +3,7 @@ local M = {}
 M.config = {
     run_on_start = true,
     watch = true,
+    before_fn = nil,
     after_fn = nil
 }
 
@@ -45,13 +46,13 @@ local function parse_config(file_path)
         if line ~= "" then
             local key, value = line:match("([^=]+)%s*=%s*(.*)")
 
-            if value == "None" then
-                value = nil
-            end
 
             if key and value then
                 key = key:match("^%s*(.-)%s*$")
                 value = value:match("^%s*(.-)%s*$")
+                if value == "None" then
+                    value = nil
+                end
 
                 local category, color_type = key:match("([^|]+)|(.*)")
 
@@ -77,6 +78,10 @@ local function set_highlights(config)
 end
 
 function M.apply_colors()
+    if M.config.before_fn then
+        M.config.before_fn()
+    end
+
     local config_path = vim.fn.stdpath("config") .. "/pimp.conf"
     local config = parse_config(config_path)
     set_highlights(config)
